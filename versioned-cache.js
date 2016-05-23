@@ -15,7 +15,7 @@ VersionedCache.prototype.initializeCache = function() {
     .then(function (cache) {
       // Load the manifest into the cache.
       var manifestBlob = new Blob([JSON.stringify(this.manifest)], {type: 'application/json'});
-      var manifestPut  = cache.put('manifest.json', new Response(manifestBlob, STATUS_OK));
+      var manifestPut  = cache.put('manifest.json', new Response(manifestBlob, VersionedCache.STATUS_OK));
 
       // try to find the next version's files in the existing caches.
       var updateCache  = Promise
@@ -36,7 +36,7 @@ VersionedCache.prototype.initializeCache = function() {
           })
 
           if (missing.length) {
-            updates.push(this.getBundle(missing));
+            updates.push(this.getBundle(cache, missing));
           }
 
           return Promise.all(updates);
@@ -48,8 +48,8 @@ VersionedCache.prototype.initializeCache = function() {
   ;
 }
 
-VersionedCache.prototype.getBundle = function(files) {
-  return fetch(new Request('/bundle?files=' + gets.join(',')))
+VersionedCache.prototype.getBundle = function(cache, files) {
+  return fetch(new Request('/bundle?files=' + files.join(',')))
     .then(function (res) { return res.json(); })
     .then(function (files) {
       return Promise.all(Object.keys(files).map(function(path) {
